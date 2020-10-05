@@ -16,7 +16,7 @@ Supported types: call, return, commit, reply, publish, subscribe.
 
 ```ts
 /// rpc.check[call]
-class CheckArgs {
+class CheckArg {
     command: string
 }
 
@@ -26,12 +26,12 @@ class CheckRet {
 }
 
 /// rpc.run[commit]
-class RunArgs {
+class RunArg {
     command: string
 }
 
 /// rpc.run[reply]
-class RunWorkerMsg {
+class RunMsg {
     time: Date
     message: string
 }
@@ -46,5 +46,41 @@ class CreateMsg {
 /// logging.*[subscribe]
 class LoggingSubMsg {
     time: Date
+}
+```
+
+Generated:
+
+```ts
+// type declarations by quicktype
+...
+
+class QuickRabbit {
+    ...
+
+    check(arg: CheckArg): Promise<CheckRet> {
+        ...
+    }
+    registerCheckResponder(f: (arg: CheckArg) => CheckRet | Promise<CheckRet>) {
+        ...
+    }
+
+    run(arg: RunArg, callback: (msg: RunMsg) => void) {
+        ...
+    }
+    registerRunWorker(f: (arg: CheckArg, reply: (msg: RunMsg) => void)) {
+        ...
+    }
+
+    logCreate(arg: CreateMsg) {
+        ...
+    }
+    subscribeLog() {
+
+    }
+}
+
+export async function connect() {
+    return new QuickRabbit(...)
 }
 ```
