@@ -1,0 +1,22 @@
+{
+  "name": "quickrabbit",
+  "version": "0.1.0",
+  "description": "`quickrabbit` generates strongly-typed functions for implementing RPC, task queue, Pub/Sub, etc. using RabbitMQ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yxonic/quickrabbit.git"
+  },
+  "author": "Yu Yin <yxonic@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yxonic/quickrabbit/issues"
+  },
+  "homepage": "https://github.com/yxonic/quickrabbit#readme",
+  "dependencies": {
+    "quicktype-core": "^6.0.69"
+  }
+}
