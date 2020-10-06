@@ -15,35 +15,35 @@
 Supported types: call, return, commit, reply, publish, subscribe.
 
 ```ts
-/// rpc.check[call]
+/// check[rpc.check]: call
 class CheckArg {
     command: string
 }
 
-/// rpc.check[return]
+/// check[rpc.check]: return
 class CheckRet {
     available: boolean
 }
 
-/// rpc.run[commit]
+/// run[rpc.run]: commit
 class RunArg {
     command: string
 }
 
-/// rpc.run[reply]
+/// run[rpc.run]: reply
 class RunMsg {
     time: Date
     message: string
 }
 
-/// logging.create[publish,subscribe]
+/// logCreate[logging.create]: publish,subscribe
 class CreateMsg {
     id: string
     name: string
     time: Date
 }
 
-/// logging.*[subscribe]
+/// logAll[logging.*]: subscribe
 class LoggingSubMsg {
     time: Date
 }
@@ -55,31 +55,34 @@ Generated:
 // type declarations by quicktype
 ...
 
+// main class with auto-generated functions
 class QuickRabbit {
     ...
 
     check(arg: CheckArg): Promise<CheckRet> {
         ...
     }
-    registerCheckResponder(f: (arg: CheckArg) => CheckRet | Promise<CheckRet>) {
+    checkImpl(f: (arg: CheckArg) => CheckRet | Promise<CheckRet>) {
         ...
     }
 
-    run(arg: RunArg, callback: (msg: RunMsg) => void) {
+    run(arg: RunArg, handler: (msg: RunMsg) => void) {
         ...
     }
-    registerRunWorker(f: (arg: CheckArg, reply: (msg: RunMsg) => void)) {
+    runImpl(f: (arg: CheckArg, reply: (msg: RunMsg) => void)) {
         ...
     }
 
-    logCreate(arg: CreateMsg) {
+    logCreatePublish(arg: CreateMsg) {
         ...
     }
-    subscribeLog() {
 
+    logAllSubscribe(handler: (msg: LoggingSubMsg) => void) {
+        ...
     }
 }
 
+// create connection
 export async function connect() {
     return new QuickRabbit(...)
 }
