@@ -18,5 +18,8 @@
   "homepage": "https://github.com/yxonic/quickrabbit#readme",
   "dependencies": {
     "quicktype-core": "^6.0.69"
+  },
+  "devDependencies": {
+    "@types/node": "^14.11.5"
   }
 }
