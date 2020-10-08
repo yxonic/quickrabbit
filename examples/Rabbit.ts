@@ -1,3 +1,0 @@
-class Rabbit {
-  name: string
-}

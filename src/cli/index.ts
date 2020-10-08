@@ -18,7 +18,6 @@ function makeTypeScriptSource (fileNames: string[]) {
 
 async function convert (fileNames: string[], targetLanguage: string) {
   const source = makeTypeScriptSource(fileNames)
-
   const inputData = new InputData()
   inputData.addSource(
     'schema',
@@ -29,15 +28,19 @@ async function convert (fileNames: string[], targetLanguage: string) {
   return quicktype({
     inputData,
     lang: targetLanguage,
+    rendererOptions: {
+      'runtime-typecheck': 'false',
+    },
   })
 }
 
 async function main () {
-  const { lines } = await convert(
-    ['examples/Rabbit.ts'],
-    'Rust',
+  const r = await convert(
+    ['examples/Check.ts'],
+    'TypeScript',
   )
-  console.log(lines.join('\n'))
+  console.log(r)
+  console.log(r.lines.join('\n'))
 }
 
 main()
