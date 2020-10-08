@@ -1,6 +1,10 @@
 # quickrabbit
 
-`quickrabbit` generates strongly-typed functions for implementing RPC, task queue, Pub/Sub, etc., using RabbitMQ. It is based on the awesome [`quicktype`](https://github.com/quicktype/quicktype) library.
+`quickrabbit` generates strongly-typed easy-to-use APIs for implementing cross-language actions such as RPC, task queue and Pub/Sub, using RabbitMQ. It is based on the awesome [`quicktype`](https://github.com/quicktype/quicktype) library.
+
+**STILL WORK IN PROGRESS!**
+
+Supported output languages: TypeScript, Python, Java, Go, Rust.
 
 ## Usage
 
@@ -12,7 +16,12 @@
 
 ## Extended Annotations
 
-Grammar: `/// name[key]: action[, action, ...]`
+Grammar:
+
+```ts
+/// name[key]: action[, action, ...]
+class TypeName
+```
 
 Supported actions: call, return, commit, reply, publish, subscribe.
 
@@ -51,7 +60,7 @@ class LoggingSubMsg {
 }
 ```
 
-Generated:
+Generated (TypeScript):
 
 ```ts
 // type declarations by quicktype
