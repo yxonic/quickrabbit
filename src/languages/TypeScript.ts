@@ -1,22 +1,22 @@
 import { AnnotatedAction } from '../Annotations'
-import { RabbitRenderer } from '../Renderer'
+import RabbitRenderer from '../Renderer'
 
-export class TypeScriptRabbitRenderer extends RabbitRenderer {
-  emitBlock(start: string, end: string, emit: () => void) {
+export default class TypeScriptRabbitRenderer extends RabbitRenderer {
+  emitBlock(start: string, end: string, emit: () => void): void {
     this.emitLine(start, '{')
     this.indent(emit)
     this.emitLine('}', end)
   }
 
-  rabbitBlockStart() {
+  rabbitBlockStart(): string {
     return 'export class Rabbit'
   }
 
-  beforeAction() {
+  beforeAction(): void {
     this.emitBlock('constructor()', '', () => {})
   }
 
-  renderAction(action: AnnotatedAction) {
+  renderAction(action: AnnotatedAction): void {
     action.actions.forEach((a) => {
       switch (a) {
         case 'call':
@@ -58,7 +58,7 @@ export class TypeScriptRabbitRenderer extends RabbitRenderer {
     })
   }
 
-  afterRabbit() {
+  afterRabbit(): void {
     this.emitBlock('export async function connect()', '', () => {
       this.emitLine('return new Rabbit()')
     })

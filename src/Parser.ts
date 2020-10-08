@@ -1,6 +1,6 @@
 import { Annotation } from './Annotations'
 
-export class Parser {
+export default class Parser {
   constructor(private readonly src: string) {}
 
   // eslint-disable-next-line class-methods-use-this

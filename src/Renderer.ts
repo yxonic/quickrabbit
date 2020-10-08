@@ -1,10 +1,8 @@
 import { AnnotatedAction, Annotation } from './Annotations'
 
-export abstract class RabbitRenderer {
+export default abstract class RabbitRenderer {
   private annotatedActions: Record<string, AnnotatedAction> = {}
-
   private emitContext: string[] = []
-
   private indentLevel = 0
 
   constructor(readonly annotations: Array<Annotation>) {
@@ -44,12 +42,11 @@ export abstract class RabbitRenderer {
     })
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  indentation() {
+  indentation(): string {
     return '    '
   }
 
-  emitBlock(start: string, end: string, emit: () => void) {
+  emitBlock(start: string, end: string, emit: () => void): void {
     this.emitLine(start)
     this.indent(emit)
     this.emitLine(end)
@@ -63,7 +60,7 @@ export abstract class RabbitRenderer {
     return ''
   }
 
-  rabbitBlockEnd() {
+  rabbitBlockEnd(): string {
     return ''
   }
 
@@ -90,12 +87,12 @@ export abstract class RabbitRenderer {
     return this.emitContext
   }
 
-  emitLine(...parts: string[]) {
+  emitLine(...parts: string[]): void {
     const line = this.indentation().repeat(this.indentLevel) + parts.join(' ')
     this.emitContext.push(line.trimEnd())
   }
 
-  indent(f: () => void) {
+  indent(f: () => void): void {
     this.indentLevel += 1
     f()
     this.indentLevel -= 1

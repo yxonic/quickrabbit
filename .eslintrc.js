@@ -12,6 +12,7 @@ module.exports = {
     rules: {
       "semi": ["error", "never"],
       "@typescript-eslint/semi": ["error", "never"],
+      "comma-dangle": ["error", "always-multiline"],
       "@typescript-eslint/member-delimiter-style": ["error", {
         "multiline": {
           "delimiter": "none"
@@ -20,11 +21,6 @@ module.exports = {
             "delimiter": "semi"
         }
       }],
-      "comma-dangle": ["error", "always-multiline"],
-      "class-methods-use-this": 0,
-      "@typescript-eslint/explicit-function-return-type": 0,
-      "@typescript-eslint/explicit-module-boundary-types": 0,
-      "@typescript-eslint/no-explicit-any": 0,
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["error", {
         "vars": "all",
@@ -33,9 +29,10 @@ module.exports = {
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }],
-      "max-classes-per-file": 0,
+      "lines-between-class-members": "off",
+      "@typescript-eslint/lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+      "class-methods-use-this": 0,
       "no-console": 0,
-      "import/prefer-default-export": 0
     }
   };
   

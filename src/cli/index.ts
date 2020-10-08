@@ -4,8 +4,8 @@ import {
   quicktype, InputData, JSONSchemaInput, FetchingJSONSchemaStore, defined,
 } from 'quicktype-core'
 import { schemaForTypeScriptSources } from 'quicktype-typescript-input'
-import { Parser } from '../Parser'
-import { TypeScriptRabbitRenderer } from '../languages/TypeScript'
+import Parser from '../Parser'
+import TypeScriptRabbitRenderer from '../languages/TypeScript'
 
 async function convert(fileNames: string[], targetLanguage: string) {
   const sources: { [fileName: string]: string } = {}
