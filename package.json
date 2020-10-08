@@ -2,8 +2,9 @@
   "name": "quickrabbit",
   "version": "0.1.0",
   "description": "`quickrabbit` generates strongly-typed functions for implementing RPC, task queue, Pub/Sub, etc. using RabbitMQ",
-  "main": "index.js",
   "scripts": {
+    "dev": "ts-node src/cli/index.ts",
+    "lint": "eslint --fix --ignore-path .gitignore --ext .ts .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,9 +18,17 @@
   },
   "homepage": "https://github.com/yxonic/quickrabbit#readme",
   "dependencies": {
-    "quicktype-core": "^6.0.69"
+    "quicktype-core": "^6.0.69",
+    "quicktype-typescript-input": "0.0.11"
   },
   "devDependencies": {
-    "@types/node": "^14.11.5"
+    "@types/node": "^14.11.5",
+    "@typescript-eslint/eslint-plugin": "^4.4.0",
+    "@typescript-eslint/parser": "^4.4.0",
+    "eslint": "^7.10.0",
+    "eslint-config-airbnb-typescript": "^11.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
   }
 }

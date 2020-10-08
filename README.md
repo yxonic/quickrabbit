@@ -12,7 +12,9 @@
 
 ## Extended Annotations
 
-Supported types: call, return, commit, reply, publish, subscribe.
+Grammar: `/// name[key]: action[, action, ...]`
+
+Supported actions: call, return, commit, reply, publish, subscribe.
 
 ```ts
 /// check[rpc.check]: call
