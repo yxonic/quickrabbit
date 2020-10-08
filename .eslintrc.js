@@ -20,9 +20,8 @@ module.exports = {
             "delimiter": "semi"
         }
       }],
-      "import/no-cycle": 0,
-      "import/no-extraneous-dependencies": 0,
       "comma-dangle": ["error", "always-multiline"],
+      "class-methods-use-this": 0,
       "@typescript-eslint/explicit-function-return-type": 0,
       "@typescript-eslint/explicit-module-boundary-types": 0,
       "@typescript-eslint/no-explicit-any": 0,
@@ -34,14 +33,10 @@ module.exports = {
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }],
-      "no-param-reassign": ["error", { "props": false }],
       "space-before-function-paren": 0,
       "@typescript-eslint/space-before-function-paren": ["error", "always"],
       "max-classes-per-file": 0,
       "no-console": 0,
-      "lines-between-class-members": ["error", "always", { exceptAfterSingleLine: true }],
-      "consistent-return": 0,
-      "import/no-unresolved": 0,
       "import/prefer-default-export": 0
     }
   };

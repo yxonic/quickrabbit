@@ -4,7 +4,7 @@
   "description": "`quickrabbit` generates strongly-typed functions for implementing RPC, task queue, Pub/Sub, etc. using RabbitMQ",
   "scripts": {
     "dev": "ts-node src/cli/index.ts",
-    "lint": "eslint --fix --ignore-path .gitignore --ext .ts .",
+    "lint": "eslint --fix --ignore-path .gitignore --ignore-pattern 'examples/**/*.ts' --ext .ts .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

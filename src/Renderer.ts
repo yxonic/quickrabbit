@@ -44,6 +44,7 @@ export abstract class RabbitRenderer {
     })
   }
 
+  // eslint-disable-next-line class-methods-use-this
   indentation () {
     return '    '
   }
@@ -53,16 +54,23 @@ export abstract class RabbitRenderer {
     this.indent(emit)
     this.emitLine(end)
   }
+
   beforeRabbit (): void {}
+
   afterRabbit (): void {}
-  rabbitBlockStart(): string {
+
+  rabbitBlockStart (): string {
     return ''
   }
-  rabbitBlockEnd() {
+
+  rabbitBlockEnd () {
     return ''
   }
+
   beforeAction (): void {}
+
   afterAction (): void {}
+
   abstract renderAction (action: AnnotatedAction): void
 
   render (): string[] {
@@ -76,7 +84,7 @@ export abstract class RabbitRenderer {
           this.renderAction(action)
         })
         this.afterAction()
-      }
+      },
     )
     this.afterRabbit()
     return this.emitContext
