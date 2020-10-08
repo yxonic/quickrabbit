@@ -4,8 +4,10 @@ import {
   quicktype, InputData, JSONSchemaInput, FetchingJSONSchemaStore, defined,
 } from 'quicktype-core'
 import { schemaForTypeScriptSources } from 'quicktype-typescript-input'
+import { Parser } from '../Parser'
+import { TypeScriptRabbitRenderer } from '../languages/TypeScript'
 
-function makeTypeScriptSource (fileNames: string[]) {
+async function convert (fileNames: string[], targetLanguage: string) {
   const sources: { [fileName: string]: string } = {}
 
   fileNames.forEach((fileName) => {
@@ -13,34 +15,39 @@ function makeTypeScriptSource (fileNames: string[]) {
     sources[baseName] = defined(fs.readFileSync(fileName, 'utf8'))
   })
 
-  return schemaForTypeScriptSources(sources)
-}
-
-async function convert (fileNames: string[], targetLanguage: string) {
-  const source = makeTypeScriptSource(fileNames)
+  const schema = schemaForTypeScriptSources(sources)
   const inputData = new InputData()
   inputData.addSource(
     'schema',
-    source,
+    schema,
     () => new JSONSchemaInput(new FetchingJSONSchemaStore()),
   )
 
-  return quicktype({
+  const { lines: types } = await quicktype({
     inputData,
     lang: targetLanguage,
     rendererOptions: {
       'runtime-typecheck': 'false',
     },
   })
+
+  const annotations = Object.values(sources).map((src) => {
+    const parser = new Parser(src)
+    return parser.parse()
+  }).reduce(Array.prototype.concat)
+
+  const renderer = new TypeScriptRabbitRenderer(annotations)
+  const rabbit = renderer.render()
+
+  return types.concat(rabbit)
 }
 
 async function main () {
-  const r = await convert(
+  const lines = await convert(
     ['examples/Check.ts'],
     'TypeScript',
   )
-  console.log(r)
-  console.log(r.lines.join('\n'))
+  console.log(lines.join('\n'))
 }
 
 main()

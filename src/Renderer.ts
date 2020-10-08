@@ -3,6 +3,8 @@ import { AnnotatedAction, Annotation } from './Annotations'
 export abstract class RabbitRenderer {
   private annotatedActions: Record<string, AnnotatedAction> = {}
 
+  private emitContext: string[] = []
+
   constructor (readonly annotations: Array<Annotation>) {
     this.annotations.forEach((annotation) => {
       annotation.actions.forEach((action) => {
@@ -42,14 +44,17 @@ export abstract class RabbitRenderer {
 
   abstract renderAction (action: AnnotatedAction): void
 
-  render () {
+  render (): string[] {
     Object.values(this.annotatedActions).forEach((action) => {
       this.renderAction(action)
     })
+    return this.emitContext
   }
 
   // eslint-disable-next-line class-methods-use-this
-  emitLine (..._: string[]) {}
+  emitLine (...parts: string[]) {
+    this.emitContext.push(parts.join(' '))
+  }
 
   // eslint-disable-next-line class-methods-use-this
   indent (_: () => void) {}
