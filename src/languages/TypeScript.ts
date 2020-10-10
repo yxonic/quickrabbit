@@ -47,10 +47,10 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
           )
           break
         case 'publish':
-          this.emitBlock(`${action.name}Publish(arg: ${action.inputType})`, '', () => {})
+          this.emitBlock(`${action.name}Publish(msg: ${action.inputType})`, '', () => {})
           break
         case 'subscribe':
-          this.emitBlock(`${action.name}Subscribe(arg: ${action.outputType})`, '', () => {})
+          this.emitBlock(`${action.name}Subscribe(handler: (msg: ${action.outputType}) => void)`, '', () => {})
           break
         default:
           break

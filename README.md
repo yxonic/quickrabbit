@@ -55,7 +55,7 @@ class CreateMsg {
 }
 
 /// logAll[logging.*]: subscribe
-class LoggingSubMsg {
+class LogMsg {
     time: Date
 }
 ```
@@ -84,11 +84,14 @@ class QuickRabbit {
         ...
     }
 
-    logCreatePublish(arg: CreateMsg) {
+    logCreatePublish(msg: CreateMsg) {
+        ...
+    }
+    logCreateSubscribe(msg: CreateMsg) {
         ...
     }
 
-    logAllSubscribe(handler: (msg: LoggingSubMsg) => void) {
+    logAllSubscribe(handler: (msg: LogMsg) => void) {
         ...
     }
 }
