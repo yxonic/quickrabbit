@@ -1,10 +1,10 @@
 import { Annotation } from './Annotations'
 
 export class Parser {
-  constructor (private readonly src: string) {}
+  constructor(private readonly src: string) {}
 
   // eslint-disable-next-line class-methods-use-this
-  parse (): Array<Annotation> {
+  parse(): Array<Annotation> {
     return [
       {
         name: 'run',

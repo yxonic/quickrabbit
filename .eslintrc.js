@@ -33,8 +33,6 @@ module.exports = {
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }],
-      "space-before-function-paren": 0,
-      "@typescript-eslint/space-before-function-paren": ["error", "always"],
       "max-classes-per-file": 0,
       "no-console": 0,
       "import/prefer-default-export": 0

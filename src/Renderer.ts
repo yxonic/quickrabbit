@@ -7,7 +7,7 @@ export abstract class RabbitRenderer {
 
   private indentLevel = 0
 
-  constructor (readonly annotations: Array<Annotation>) {
+  constructor(readonly annotations: Array<Annotation>) {
     this.annotations.forEach((annotation) => {
       annotation.actions.forEach((action) => {
         let a = this.annotatedActions[annotation.name]
@@ -45,35 +45,35 @@ export abstract class RabbitRenderer {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  indentation () {
+  indentation() {
     return '    '
   }
 
-  emitBlock (start: string, end: string, emit: () => void) {
+  emitBlock(start: string, end: string, emit: () => void) {
     this.emitLine(start)
     this.indent(emit)
     this.emitLine(end)
   }
 
-  beforeRabbit (): void {}
+  beforeRabbit(): void {}
 
-  afterRabbit (): void {}
+  afterRabbit(): void {}
 
-  rabbitBlockStart (): string {
+  rabbitBlockStart(): string {
     return ''
   }
 
-  rabbitBlockEnd () {
+  rabbitBlockEnd() {
     return ''
   }
 
-  beforeAction (): void {}
+  beforeAction(): void {}
 
-  afterAction (): void {}
+  afterAction(): void {}
 
-  abstract renderAction (action: AnnotatedAction): void
+  abstract renderAction(action: AnnotatedAction): void
 
-  render (): string[] {
+  render(): string[] {
     this.beforeRabbit()
     this.emitBlock(
       this.rabbitBlockStart(),
@@ -90,12 +90,12 @@ export abstract class RabbitRenderer {
     return this.emitContext
   }
 
-  emitLine (...parts: string[]) {
+  emitLine(...parts: string[]) {
     const line = this.indentation().repeat(this.indentLevel) + parts.join(' ')
     this.emitContext.push(line.trimEnd())
   }
 
-  indent (f: () => void) {
+  indent(f: () => void) {
     this.indentLevel += 1
     f()
     this.indentLevel -= 1

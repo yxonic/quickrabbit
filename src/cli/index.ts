@@ -7,7 +7,7 @@ import { schemaForTypeScriptSources } from 'quicktype-typescript-input'
 import { Parser } from '../Parser'
 import { TypeScriptRabbitRenderer } from '../languages/TypeScript'
 
-async function convert (fileNames: string[], targetLanguage: string) {
+async function convert(fileNames: string[], targetLanguage: string) {
   const sources: { [fileName: string]: string } = {}
 
   fileNames.forEach((fileName) => {
@@ -42,7 +42,7 @@ async function convert (fileNames: string[], targetLanguage: string) {
   return types.concat(rabbit)
 }
 
-async function main () {
+async function main() {
   const lines = await convert(
     ['examples/Check.ts'],
     'TypeScript',
