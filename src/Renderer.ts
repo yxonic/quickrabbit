@@ -92,6 +92,12 @@ export default abstract class RabbitRenderer {
     this.emitContext.push(line.trimEnd())
   }
 
+  emitLines(lines: string | string[]): void {
+    (typeof lines === 'string' ? lines.split('\n') : lines).forEach((line) => {
+      this.emitContext.push(this.indentation().repeat(this.indentLevel) + line.trimEnd())
+    })
+  }
+
   indent(f: () => void): void {
     this.indentLevel += 1
     f()
