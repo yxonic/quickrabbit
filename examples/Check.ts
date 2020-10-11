@@ -27,6 +27,6 @@ class CreateMsg {
 }
 
 /// logAll[logging.*]: subscribe
-class LoggingSubMsg {
+class LogMsg {
   time: Date
 }

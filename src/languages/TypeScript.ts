@@ -1,12 +1,19 @@
 import { AnnotatedAction } from '../Annotations'
 import RabbitRenderer from '../Renderer'
 
+const connectLines = `const conn = await amqp.connect(url)
+const ch = await conn.createChannel()
+const rabbit = new Rabbit(conn, ch, exchange)
+await rabbit.initialize()
+return rabbit`
+
 const initializeLines = `const ch = this.channel
 await ch.assertExchange(this.exchange, 'topic')
-await ch.assertQueue('core.reply-to')
+const { queue: replyTo } = await ch.assertQueue('')
+this.replyTo = replyTo
 ch.prefetch(1)
 const { callbacks } = this
-await ch.consume('core.reply-to', async (msg) => {
+await ch.consume(replyTo, async (msg) => {
     if (msg === null) {
         return null
     }
@@ -31,12 +38,6 @@ ch.on('return', (msg) => {
     })
 })`
 
-const connectLines = `const conn = await amqp.connect(url)
-const ch = await conn.createChannel()
-const rabbit = new Rabbit(conn, ch, exchange)
-await rabbit.initialize()
-return rabbit`
-
 const publishLines = `const msg = JSON.stringify(obj)
 return this.channel.publish(this.exchange, key, Buffer.from(msg))`
 
@@ -55,7 +56,7 @@ ch.consume(queue, async (msg) => {
 
 const replyLines = `const ch = await this.channel
 return ch.publish(
-    this.exchange, orig.properties.replyTo || 'core.reply-to',
+    '', orig.properties.replyTo || 'core.reply-to',
     Buffer.from(JSON.stringify(msg)),
     {
         correlationId: orig.properties.correlationId,
@@ -81,7 +82,7 @@ if (callback === undefined) {
 }
 ch.publish(this.exchange, key, Buffer.from(message), {
     correlationId,
-    replyTo: 'core.reply-to',
+    replyTo: this.replyTo,
     mandatory: true,
 })
 if (promise !== null) {
@@ -106,20 +107,22 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
   }
 
   beforeAction(): void {
-    this.emitLine('connection: amqp.Connection')
-    this.emitLine('channel: amqp.Channel')
-    this.emitLine('callbacks: Record<string, (msg: any, done: () => void) => void>')
+    this.emitLine('replyTo: string = \'\'')
+    this.emitLine('callbacks: Record<string, (msg: any, done: () => void) => void> = {}')
     this.emitBlock('constructor(private connection: amqp.Connection, private channel: amqp.Channel, private exchange: string)', '', () => {})
     this.emitBlock('async initialize()', '', () => {
       this.emitLines(initializeLines)
     })
+    this.emitBlock('async disconnect()', '', () => {
+      this.emitLine('this.connection.close()')
+    })
     this.emitBlock('async publish(key: string, obj: unknown)', '', () => {
       this.emitLines(publishLines)
     })
-    this.emitBlock('async subscribe(key: string, handler: (obj: unknown, reply: (o: unknow) => Promise<void>) => void)', '', () => {
+    this.emitBlock('async subscribe(key: string, handler: (obj: unknown, reply: (o: unknown) => Promise<void>) => void)', '', () => {
       this.emitLines(subscribeLines)
     })
-    this.emitBlock('async call(key: string, obj: unknown, callback?: Function)', '', () => {
+    this.emitBlock('async call(key: string, obj: unknown, callback?: (msg: any, done: () => void) => void)', '', () => {
       this.emitLines(callLines)
     })
     this.emitBlock('async reply(orig: amqp.ConsumeMessage, msg: unknown)', '', () => {
@@ -131,7 +134,7 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
     action.actions.forEach((a) => {
       switch (a) {
         case 'call':
-          this.emitBlock(`async ${action.name}(arg: ${action.inputType}): CheckRet`, '', () => {
+          this.emitBlock(`async ${action.name}(arg: ${action.inputType})`, '', () => {
             this.emitLines([
               `const msg = await this.call('${action.key}', arg)`,
               'if (msg === null) { throw new Error(\'rpc server unavailable\') }',
@@ -157,7 +160,7 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
           break
         case 'commit':
           this.emitBlock(
-            `${action.name}(arg: ${action.inputType}, handler: (msg: ${action.inputType}, done: () => void) => void), onReturn: () => void)`,
+            `${action.name}(arg: ${action.inputType}, handler: (msg: ${action.inputType}, done: () => void) => void, onReturn: () => void)`,
             '',
             () => {
               this.emitBlock(
@@ -192,13 +195,21 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
           )
           break
         case 'publish':
-          this.emitBlock(`async ${action.name}Publish(msg: ${action.inputType})`, '', () => {
+          this.emitBlock(`async ${action.name}Publish(arg: ${action.inputType})`, '', () => {
             this.emitLine(`await this.publish('${action.key}', arg)`)
           })
           break
         case 'subscribe':
           this.emitBlock(`${action.name}Subscribe(handler: (msg: ${action.outputType}) => void)`, '', () => {
-            this.emitLine(`this.subscribe('${action.key}', handler)`)
+            this.emitBlock(
+              `this.subscribe('${action.key}', (msg) =>`,
+              ')',
+              () => {
+                this.emitLines([
+                  `handler(msg as ${action.outputType})`,
+                ])
+              },
+            )
           })
           break
         default:
