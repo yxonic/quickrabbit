@@ -44,7 +44,7 @@ return this.channel.publish(this.exchange, key, Buffer.from(msg))`
 const subscribeLines = `const ch = this.channel
 const { queue } = await ch.assertQueue('', { exclusive: true })
 await ch.bindQueue(queue, this.exchange, key)
-ch.consume(queue, async (msg) => {
+return ch.consume(queue, async (msg) => {
     if (msg === null) {
         return null
     }
@@ -149,7 +149,7 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
             '',
             () => {
               this.emitBlock(
-                `this.subscribe('${action.key}', async (arg, reply) => `,
+                `return this.subscribe('${action.key}', async (arg, reply) => `,
                 ')',
                 () => {
                   this.emitLine(`reply(await f(arg as ${action.inputType}))`)
@@ -183,7 +183,7 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
             '',
             () => {
               this.emitBlock(
-                `this.subscribe('${action.key}', (arg, reply) => `,
+                `return this.subscribe('${action.key}', (arg, reply) => `,
                 ')',
                 () => {
                   this.emitLines([
@@ -202,12 +202,10 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
         case 'subscribe':
           this.emitBlock(`${action.name}Subscribe(handler: (msg: ${action.outputType}) => void)`, '', () => {
             this.emitBlock(
-              `this.subscribe('${action.key}', (msg) =>`,
+              `return this.subscribe('${action.key}', (msg) =>`,
               ')',
               () => {
-                this.emitLines([
-                  `handler(msg as ${action.outputType})`,
-                ])
+                this.emitLine(`handler(msg as ${action.outputType})`)
               },
             )
           })
