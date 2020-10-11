@@ -6,6 +6,13 @@
 
 Supported output languages: TypeScript, Python, Java, Go, Rust.
 
+## TODO
+- [ ] Message type and error handling.
+- [ ] Renderer for all languages.
+- [ ] Parser.
+- [ ] CLI.
+- [ ] Testing.
+
 ## Usage
 
 1. Create a shared `rabbit` project across all related projects.
