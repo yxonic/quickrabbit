@@ -21,7 +21,7 @@ await ch.consume('core.reply-to', async (msg) => {
     ch.ack(msg)
     return res
 })
-ch.on('return', (msg: any) => {
+ch.on('return', (msg) => {
     // messages are only returned if there is no worker
     if (msg === null || callbacks[msg.properties.correlationId] === undefined) {
         return null
@@ -33,12 +33,61 @@ ch.on('return', (msg: any) => {
 
 const connectLines = `const conn = await amqp.connect(url)
 const ch = await conn.createChannel()
-const rabbit = new Rabbit({
-    channel: ch,
-    exchange,
-})
+const rabbit = new Rabbit(conn, ch, exchange)
 await rabbit.initialize()
 return rabbit`
+
+const publishLines = `const msg = JSON.stringify(obj)
+return this.channel.publish(this.exchange, key, Buffer.from(msg))`
+
+const subscribeLines = `const ch = this.channel
+const { queue } = await ch.assertQueue('', { exclusive: true })
+await ch.bindQueue(queue, this.exchange, key)
+ch.consume(queue, async (msg) => {
+    if (msg === null) {
+        return null
+    }
+    const r = await handler(JSON.parse(msg.content.toString()), async (m) => { await this.reply(msg, m) })
+    if (r != null) {
+        await this.reply(msg, r)
+    }
+}, { noAck: true })`
+
+const replyLines = `const ch = await this.channel
+return ch.publish(
+    this.exchange, orig.properties.replyTo || 'core.reply-to',
+    Buffer.from(JSON.stringify(msg)),
+    {
+        correlationId: orig.properties.correlationId,
+    },
+)`
+
+const callLines = `const ch = this.channel
+const message = JSON.stringify(obj)
+const correlationId = cuid()
+
+let promise: Promise<any> | null = null
+if (callback === undefined) {
+    promise = new Promise((resolve, _reject) => {
+        // eslint-disable-next-line no-param-reassign
+        this.callbacks[correlationId] = (msg: any, done: () => void) => {
+            const r = resolve(msg)
+            done()
+            return r
+        }
+    })
+} else {
+    this.callbacks[correlationId] = callback
+}
+ch.publish(this.exchange, key, Buffer.from(message), {
+    correlationId,
+    replyTo: 'core.reply-to',
+    mandatory: true,
+})
+if (promise !== null) {
+    return promise
+}
+return null`
 
 export default class TypeScriptRabbitRenderer extends RabbitRenderer {
   emitBlock(start: string, end: string, emit: () => void): void {
@@ -57,10 +106,24 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
   }
 
   beforeAction(): void {
+    this.emitLine('connection: amqp.Connection')
     this.emitLine('channel: amqp.Channel')
-    this.emitBlock('constructor()', '', () => {})
+    this.emitLine('callbacks: Record<string, (msg: any, done: () => void) => void>')
+    this.emitBlock('constructor(private connection: amqp.Connection, private channel: amqp.Channel, private exchange: string)', '', () => {})
     this.emitBlock('async initialize()', '', () => {
       this.emitLines(initializeLines)
+    })
+    this.emitBlock('async publish(key: string, obj: unknown)', '', () => {
+      this.emitLines(publishLines)
+    })
+    this.emitBlock('async subscribe(key: string, handler: (obj: unknown, reply: (o: unknow) => Promise<void>) => void)', '', () => {
+      this.emitLines(subscribeLines)
+    })
+    this.emitBlock('async call(key: string, obj: unknown, callback?: Function)', '', () => {
+      this.emitLines(callLines)
+    })
+    this.emitBlock('async reply(orig: amqp.ConsumeMessage, msg: unknown)', '', () => {
+      this.emitLines(replyLines)
     })
   }
 
@@ -68,37 +131,75 @@ export default class TypeScriptRabbitRenderer extends RabbitRenderer {
     action.actions.forEach((a) => {
       switch (a) {
         case 'call':
-          this.emitBlock(`async ${action.name}(arg: ${action.inputType})`, '', () => {})
+          this.emitBlock(`async ${action.name}(arg: ${action.inputType}): CheckRet`, '', () => {
+            this.emitLines([
+              `const msg = await this.call('${action.key}', arg)`,
+              'if (msg === null) { throw new Error(\'rpc server unavailable\') }',
+              `return msg as ${action.outputType}`,
+            ])
+          })
           break
         case 'return':
           this.emitBlock(
             `${action.name}Impl(f: (arg: ${action.inputType}) => `
               + `${action.outputType} | Promise<${action.outputType}>)`,
             '',
-            () => {},
+            () => {
+              this.emitBlock(
+                `this.subscribe('${action.key}', async (arg, reply) => `,
+                ')',
+                () => {
+                  this.emitLine(`reply(await f(arg as ${action.inputType}))`)
+                },
+              )
+            },
           )
           break
         case 'commit':
           this.emitBlock(
-            `${action.name}(arg: ${action.inputType}, handler: (msg: ${action.inputType}) => void)`,
+            `${action.name}(arg: ${action.inputType}, handler: (msg: ${action.inputType}, done: () => void) => void), onReturn: () => void)`,
             '',
-            () => {},
+            () => {
+              this.emitBlock(
+                `this.call('${action.key}', arg, (msg, done) =>`,
+                ')',
+                () => {
+                  this.emitLines([
+                    'if (msg === null) { return onReturn() }',
+                    `handler(msg as ${action.inputType}, done)`,
+                  ])
+                },
+              )
+            },
           )
           break
         case 'reply':
           this.emitBlock(
             `${action.name}Impl(f: (arg: ${action.inputType}, `
-              + `reply: (msg: ${action.outputType}) => void, `
-              + 'done: (error: Error | undefined) => void) => void)',
+              + `reply: (msg: ${action.outputType}) => void) => void)`,
             '',
-            () => {},
+            () => {
+              this.emitBlock(
+                `this.subscribe('${action.key}', (arg, reply) => `,
+                ')',
+                () => {
+                  this.emitLines([
+                    `f(arg as ${action.inputType}, (msg) => { reply(msg) })`,
+                  ])
+                },
+              )
+            },
           )
           break
         case 'publish':
-          this.emitBlock(`${action.name}Publish(msg: ${action.inputType})`, '', () => {})
+          this.emitBlock(`async ${action.name}Publish(msg: ${action.inputType})`, '', () => {
+            this.emitLine(`await this.publish('${action.key}', arg)`)
+          })
           break
         case 'subscribe':
-          this.emitBlock(`${action.name}Subscribe(handler: (msg: ${action.outputType}) => void)`, '', () => {})
+          this.emitBlock(`${action.name}Subscribe(handler: (msg: ${action.outputType}) => void)`, '', () => {
+            this.emitLine(`this.subscribe('${action.key}', handler)`)
+          })
           break
         default:
           break
